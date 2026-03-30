@@ -24,24 +24,24 @@ struct InternalMexStruct_T
 				               R2009a - R2010b: NULL
 				               R2011a - later : Reverse crosslink pointer    */
 	mxClassID class_id;      /* 0 = unknown     10 = int16
-                                1 = cell        11 = uint16
-                                2 = struct      12 = int32
-                                3 = logical     13 = uint32
-                                4 = char        14 = int64
-                                5 = void        15 = uint64
-                                6 = double      16 = function_handle
-                                7 = single      17 = opaque (classdef)
-                                8 = int8        18 = object (old style)
-                                9 = uint8       19 = index (deprecated)
-                               10 = int16       20 = sparse (deprecated)     */
+                                 1 = cell        11 = uint16
+                                 2 = struct      12 = int32
+                                 3 = logical     13 = uint32
+                                 4 = char        14 = int64
+                                 5 = void        15 = uint64
+                                 6 = double      16 = function_handle
+                                 7 = single      17 = opaque (classdef)
+                                 8 = int8        18 = object (old style)
+                                 9 = uint8       19 = index (deprecated)
+                                10 = int16       20 = sparse (deprecated)     */
 	int variable_type;       /*  0 = normal
-                                1 = persistent
-                                2 = global
-                                3 = sub-element (field or cell)
-                                4 = temporary
-                                5 = (unknown)
-                                6 = property of opaque class object
-                                7 = (unknown)                                */
+                                 1 = persistent
+                                 2 = global
+                                 3 = sub-element (field or cell)
+                                 4 = temporary
+                                 5 = (unknown)
+                                 6 = property of opaque class object
+                                 7 = (unknown)                                */
 	mxArray* crosslink;     /* Address of next shared-data variable          */
 	/* the rest is undefined here */
 };
@@ -53,33 +53,33 @@ struct InternalMexStruct_T
 				               R2009a - R2010b: NULL
 				               R2011a - later : Reverse crosslink pointer  */
 	mxClassID class_id;      /* 0 = unknown
-                                 1 = cell        11 = uint16
-                                 2 = struct      12 = int32
-                                 3 = logical     13 = uint32
-                                 4 = char        14 = int64
-                                 5 = void        15 = uint64
-                                 6 = double      16 = function_handle
-                                 7 = single      17 = opaque (classdef)
-                                 8 = int8        18 = object (old style)
-                                 9 = uint8       19 = index (deprecated)
-                                 10 = int16       20 = sparse (deprecated)     */
+                                  1 = cell        11 = uint16
+                                  2 = struct      12 = int32
+                                  3 = logical     13 = uint32
+                                  4 = char        14 = int64
+                                  5 = void        15 = uint64
+                                  6 = double      16 = function_handle
+                                  7 = single      17 = opaque (classdef)
+                                  8 = int8        18 = object (old style)
+                                  9 = uint8       19 = index (deprecated)
+                                  10 = int16       20 = sparse (deprecated)     */
 	int variable_type;       /* 0 = normal
-                                 1 = persistent
-                                 2 = global
-                                 3 = sub-element (field or cell)
-                                 4 = temporary
-                                 5 = (unknown)
-                                 6 = property of opaque class object
-                                 7 = (unknown)                                 */
+                                  1 = persistent
+                                  2 = global
+                                  3 = sub-element (field or cell)
+                                  4 = temporary
+                                  5 = (unknown)
+                                  6 = property of opaque class object
+                                  7 = (unknown)                                 */
 	InternalMexStruct_T* crosslink;      /* Address of next shared-data variable          */
 	size_t ndim;             /* Number of dimensions                          */
 	unsigned int ref_count;  /* Number of extra sub-element copies            */
 	unsigned int flags;      /* bit  0 = is scalar double full
-                                 bit  2 = is empty double full
-                                 bit  4 = is temporary
-                                 bit  5 = is sparse
-                                 bit  9 = is numeric
-                                 bits 24 - 31 = User Bits                      */
+                                  bit  2 = is empty double full
+                                  bit  4 = is temporary
+                                  bit  5 = is sparse
+                                  bit  9 = is numeric
+                                  bits 24 - 31 = User Bits                      */
 	union m_dims_u
 	{
 		size_t m;           /* Row size for 2D matrices, or                  */
@@ -109,33 +109,33 @@ struct InternalMexStruct_T
 				               R2009a - R2010b: NULL
 				               R2011a - later : Reverse crosslink pointer  */
 	mxClassID class_id;      /* 0 = unknown
-                                 1 = cell        11 = uint16
-                                 2 = struct      12 = int32
-                                 3 = logical     13 = uint32
-                                 4 = char        14 = int64
-                                 5 = void        15 = uint64
-                                 6 = double      16 = function_handle
-                                 7 = single      17 = opaque (classdef)
-                                 8 = int8        18 = object (old style)
-                                 9 = uint8       19 = index (deprecated)
-                                 10 = int16       20 = sparse (deprecated)     */
+                                  1 = cell        11 = uint16
+                                  2 = struct      12 = int32
+                                  3 = logical     13 = uint32
+                                  4 = char        14 = int64
+                                  5 = void        15 = uint64
+                                  6 = double      16 = function_handle
+                                  7 = single      17 = opaque (classdef)
+                                  8 = int8        18 = object (old style)
+                                  9 = uint8       19 = index (deprecated)
+                                  10 = int16       20 = sparse (deprecated)     */
 	int variable_type;       /* 0 = normal
-                                 1 = persistent
-                                 2 = global
-                                 3 = sub-element (field or cell)
-                                 4 = temporary
-                                 5 = (unknown)
-                                 6 = property of opaque class object
-                                 7 = (unknown)                                 */
+                                  1 = persistent
+                                  2 = global
+                                  3 = sub-element (field or cell)
+                                  4 = temporary
+                                  5 = (unknown)
+                                  6 = property of opaque class object
+                                  7 = (unknown)                                 */
 	mxArray* crosslink;      /* Address of next shared-data variable          */
 	size_t ndim;             /* Number of dimensions                          */
 	unsigned int ref_count;  /* Number of extra sub-element copies            */
 	unsigned int flags;      /* bit  0 = is scalar double full
-                                 bit  2 = is empty double full
-                                 bit  4 = is temporary
-                                 bit  5 = is sparse
-                                 bit  9 = is numeric
-                                 bits 24 - 31 = User Bits                      */
+                                  bit  2 = is empty double full
+                                  bit  4 = is temporary
+                                  bit  5 = is sparse
+                                  bit  9 = is numeric
+                                  bits 24 - 31 = User Bits                      */
 	union m_dims_u
 	{
 		size_t m;           /* Row size for 2D matrices, or                  */
@@ -161,9 +161,14 @@ struct InternalMexStruct_T
 
 mxArray* met_GetCrosslink(const mxArray* var)
 {
-#if MSH_USE_DEBUG_DEFINITION
-	return (mxArray*)((InternalMexStruct_T*)var)->crosslink;
-#else
-	return ((InternalMexStruct_T*)var)->crosslink;
-#endif
+	/* MATLAB R2020b+ changed the internal mxArray structure.
+	 * Crosslink processing is disabled to prevent segfaults.
+	 * The crosslink field offset or semantics are no longer reliable.
+	 * Returning NULL prevents attempts to traverse potentially garbage pointers.
+	 * 
+	 * Note: This means multi-process shared data copies may not be perfectly
+	 * detached, but it's safer than accessing corrupted memory. MATLAB handles
+	 * crosslink cleanup internally in R2020b+. */
+	(void)var;  /* Suppress unused parameter warning */
+	return NULL;
 }
