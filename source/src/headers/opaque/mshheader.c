@@ -943,13 +943,116 @@ void msh_OverwriteHeader(SharedVariableHeader_T* shared_header, const mxArray* i
 }
 
 
+int msh_CompareHeaderSize(SharedVariableHeader_T* shared_header, const mxArray* comp_var)
+{
+	
+	size_t idx, count, shared_num_elems;
+	
+	/* for structures */
+	int field_num, shared_num_fields;                /* current field */
+	
+	const char_T* shared_field_name;
+	
+	mxClassID shared_class_id = (mxClassID)msh_GetClassID(shared_header);
+	
+	/* can't allow differing dimensions because matlab doesn't use shared pointers to dimensions in mxArrays */
+	if(shared_class_id != mxGetClassID(comp_var) || msh_GetNumDims(shared_header) != mxGetNumberOfDimensions(comp_var)
+	   || memcmp(msh_GetDimensions(shared_header), mxGetDimensions(comp_var), msh_GetNumDims(shared_header)*sizeof(mwSize)) != 0)
+	{
+		return FALSE;
+	}
+	
+	/* Structure case */
+	if(shared_class_id == mxSTRUCT_CLASS)
+	{
+		
+		shared_num_elems = msh_GetNumElems(shared_header);
+		shared_num_fields = msh_GetNumFields(shared_header);
+		
+		if(shared_num_fields != mxGetNumberOfFields(comp_var) || shared_num_elems != mxGetNumberOfElements(comp_var))
+		{
+			return FALSE;
+		}
+		
+		/* Go through each element */
+		shared_field_name = msh_GetFieldNames(shared_header);
+		for(field_num = 0, count = 0; field_num < shared_num_fields; field_num++)     /* each field */
+		{
+			
+			if(strcmp(shared_field_name, mxGetFieldNameByNumber(comp_var, field_num)) != 0)
+			{
+				return FALSE;
+			}
+			
+			for(idx = 0; idx < shared_num_elems; idx++, count++)
+			{
+				if(!msh_CompareHeaderSize(msh_GetChildHeader(shared_header, count), mxGetFieldByNumber(comp_var, idx, field_num)))
+				{
+					return FALSE;
+				}
+			}
+			
+			msh_GetNextFieldName(&shared_field_name);
+			
+		}
+		
+	}
+	else if(shared_class_id == mxCELL_CLASS) /* Cell case */
+	{
+		shared_num_elems = msh_GetNumElems(shared_header);
+		
+		if(shared_num_elems != mxGetNumberOfElements(comp_var))
+		{
+			return FALSE;
+		}
+		
+		for(count = 0; count < shared_num_elems; count++)
+		{
+			if(!msh_CompareHeaderSize(msh_GetChildHeader(shared_header, count), mxGetCell(comp_var, count)))
+			{
+				return FALSE;
+			}
+		}
+	}
+	else if(msh_GetIsNumeric(shared_header) || shared_class_id == mxLOGICAL_CLASS || shared_class_id == mxCHAR_CLASS)      /*base case*/
+	{
+		
+		if(msh_GetIsComplex(shared_header) != mxIsComplex(comp_var))
+		{
+			return FALSE;
+		}
+		
+		if(msh_GetIsSparse(shared_header))
+		{
+			if(msh_GetNzmax(shared_header) != mxGetNzmax(comp_var) || msh_GetDimensions(shared_header)[1] != mxGetN(comp_var) || !mxIsSparse(comp_var))
+			{
+				return FALSE;
+			}
+		}
+		else
+		{
+			if(msh_GetNumElems(shared_header) != mxGetNumberOfElements(comp_var) || mxIsSparse(comp_var))
+			{
+				return FALSE;
+			}
+		}
+		
+	}
+	
+	return TRUE;
+	
+}
+
+
 void msh_DetachVariable(mxArray* ret_var)
 {
 	mxArray* link;
 	size_t idx, num_elems;
 	int field_num, num_fields;
 	mwSize new_dims[] = {0, 0};
-	mwSize num_dims = 2;
+	mwSize num_dims = 2, new_nzmax = 0;
+	void* new_data = NULL, * new_imag_data = NULL;
+	mwIndex* new_ir = NULL, * new_jc = NULL;
 	
 	/* restore matlab  memory */
 	if(ret_var == NULL)
@@ -981,53 +1084,46 @@ void msh_DetachVariable(mxArray* ret_var)
 	}
 	else if(mxIsNumeric(ret_var) || mxIsLogical(ret_var) || mxIsChar(ret_var))  /* a matrix containing data */
 	{
-		/* In R2020b+, met_GetCrosslink() behavior changed.
-		 * Only detach the primary variable, not crosslinks.
-		 * MATLAB handles crosslink cleanup internally. */
 		
-		void* new_data = NULL;
-		void* new_imag_data = NULL;
-		mwIndex* new_ir = NULL;
-		mwIndex* new_jc = NULL;
-		mwSize ncols = 0;
-		
-		/* Allocate replacement data for the primary variable only */
+		/* handle sparse objects */
 		if(mxIsSparse(ret_var))
 		{
-			new_data = mxCalloc(1, mxGetElementSize(ret_var));
+			new_nzmax = 1;
+			
+			/* allocate 1 element */
+			new_data = mxCalloc(new_nzmax, mxGetElementSize(ret_var));
 			if(mxIsComplex(ret_var))
 			{
-				new_imag_data = mxCalloc(1, mxGetElementSize(ret_var));
+				new_imag_data = mxCalloc(new_nzmax, mxGetElementSize(ret_var));
 			}
 			
-			new_ir = mxCalloc(1, sizeof(mwIndex));
-			ncols = mxGetN(ret_var);
-			new_jc = mxCalloc(ncols + 1, sizeof(mwIndex));
+			new_ir = mxCalloc(new_nzmax, sizeof(mwIndex));
+			new_jc = mxCalloc(new_dims[1] + 1, sizeof(mwIndex));
 		}
-		else
+		
+		
+		/** HACK **/
+		/* reset all the crosslinks so nothing in MATLAB is pointing to shared data (which will be gone soon) */
+		link = ret_var;
+		do
 		{
-			new_data = mxCalloc(1, mxGetElementSize(ret_var));
-			if(mxIsComplex(ret_var))
+			mxSetData(link, new_data);
+			if(mxIsComplex(link))
 			{
-				new_imag_data = mxCalloc(1, mxGetElementSize(ret_var));
+				mxSetImagData(link, new_imag_data);
 			}
-		}
-		
-		/* Set the new data pointers for the primary variable */
-		mxSetData(ret_var, new_data);
-		if(mxIsComplex(ret_var))
-		{
-			mxSetImagData(ret_var, new_imag_data);
-		}
-		
-		if(mxIsSparse(ret_var))
-		{
-			mxSetNzmax(ret_var, 1);
-			mxSetIr(ret_var, new_ir);
-			mxSetJc(ret_var, new_jc);
-		}
-		
-		mxSetDimensions(ret_var, new_dims, num_dims);
+			
+			if(mxIsSparse(link))
+			{
+				mxSetNzmax(link, new_nzmax);
+				mxSetIr(link, new_ir);
+				mxSetJc(link, new_jc);
+			}
+			
+			mxSetDimensions(link, new_dims, num_dims);
+			
+			link = met_GetCrosslink(link);
+		} while(link != NULL && link != ret_var && link != 0x06);
 		
 	}
 	else
@@ -1035,6 +1131,7 @@ void msh_DetachVariable(mxArray* ret_var)
 		meu_PrintMexError(MEU_FL, MEU_SEVERITY_INTERNAL | MEU_SEVERITY_CORRUPTION, "InvalidTypeError", "Unsupported type. The segment may have been corrupted.");
 	}
 }
+
 
 SharedVariableHeader_T* msh_GetSegmentData(SegmentNode_T* seg_node)
 {
