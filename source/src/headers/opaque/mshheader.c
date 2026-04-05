@@ -1111,7 +1111,7 @@ void msh_DetachVariable(mxArray* ret_var)
 			if(mxIsComplex(link))
 			{
 				mxSetImagData(link, new_imag_data);
-			}
+			} 
 			
 			if(mxIsSparse(link))
 			{
@@ -1123,8 +1123,10 @@ void msh_DetachVariable(mxArray* ret_var)
 			mxSetDimensions(link, new_dims, num_dims);
 			
 			link = met_GetCrosslink(link);
-		} while(link != NULL && link != ret_var && link != 0x6 && link != 0xb);
-		
+		} while(link != NULL && link != ret_var && link > 0xFF);
+		// skip 'small' values of link - rather than sentinel values,
+		//  it is probably about msh_GetVariableData getting the mxArray
+		//  type instead of its address, at the top of the traversal
 	}
 	else
 	{
