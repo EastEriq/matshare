@@ -1123,7 +1123,7 @@ void msh_DetachVariable(mxArray* ret_var)
 			mxSetDimensions(link, new_dims, num_dims);
 			
 			link = met_GetCrosslink(link);
-		} while(link != NULL && link != ret_var && link != 0x06);
+		} while(link != NULL && link != ret_var && link != 0x6 && link != 0xb);
 		
 	}
 	else
